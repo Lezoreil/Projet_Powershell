@@ -2,29 +2,31 @@
 function CreaUsers($User)
 {
 	$CompteurID = 0
+    $User= New-Object psobject -Property @{
+            Id = $CompteurID
+            Name = "toto-0$CompteurID"
+            GivenName = "0"
+            Surname = "toto"
+            SamAccountName = ""
+            UserPrincipalName = ""
+            Path = ""
+            AccountPassword = ""
+            Enabled = $true}
 
 	While ($CompteurID -le 9)
 		{
 			$CompteurID++
-			$CompteurID
-
-			$User= New-Object psobject -Property @{
-			Id = $CompteurID
-			Name = "toto-0$CompteurID"
-			GivenName = ""
-			Surname = ""
-			SamAccountName = ""
-			UserPrincipalName = "$User.SamAccountName@$Domain"
-			Path = "OU=$GroupeOU,DC=maquette,DC=local"
-			AccountPassword = random-password($Pass_Secure)
-			Enabled = $true}
+			$CompteurID #Affichage de check
 
 			$Plettre = $User.Name.subString(0,1)
-			$Plettre$User.Surname
 			$GroupeOU = "Admin-$User.Name"
 			$Domain = "maquette.local"
+            $User.SamAccountName = "$Plettre$User.Surname"
+            $User.UserPrincipalName = "$User.SamAccountName@$Domain"
+            $User.Path = "OU=$GroupeOU,DC=maquette,DC=local"
+            $User.AccountPassword = random-password
 		}
 
 	$CompteurID = 0
-
+    return $Etat
 }
