@@ -1,0 +1,22 @@
+#Fonctions
+function AddOUforUserX($User)
+{
+For (i in $List)
+	$checkUser= Get-ADUser -identity $User | Select-Object name  
+	$checkUserOU= Get-ADUser -identity $User | Select-Object DistinguishedName 
+	if($User -eq $checkUser)
+	{
+		Get ADUser -identity | Select-Object
+	}
+	else
+		{
+			New-ADUser $User
+		}
+	if()
+	{
+	}
+	else
+	{
+		New-ADOrganizationalUnit -Name "Admin-$User" -Path "DC=maquette,DC=local"
+	}
+}

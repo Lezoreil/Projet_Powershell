@@ -1,0 +1,30 @@
+#Creation Utilisateurs
+function CreaUsers($User)
+{
+	$CompteurID = 0
+
+	While ($CompteurID -le 9)
+		{
+			$CompteurID++
+			$CompteurID
+
+			$User= New-Object psobject -Property @{
+			Id = $CompteurID
+			Name = "toto-0$CompteurID"
+			GivenName = ""
+			Surname = ""
+			SamAccountName = ""
+			UserPrincipalName = "$User.SamAccountName@$Domain"
+			Path = "OU=$GroupeOU,DC=maquette,DC=local"
+			AccountPassword = random-password($Pass_Secure)
+			Enabled = $true}
+
+			$Plettre = $User.Name.subString(0,1)
+			$Plettre$User.Surname
+			$GroupeOU = "Admin-$User.Name"
+			$Domain = "maquette.local"
+		}
+
+	$CompteurID = 0
+
+}
