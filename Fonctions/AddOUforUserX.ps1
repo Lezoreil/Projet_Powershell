@@ -1,8 +1,10 @@
-#Fonctions
-function AddOUforUserX($User)
+#Fonctions check
+Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
+
+function Check($User)
 {
 	write-host "Fonction AddOUforUserX lancée"
-	#Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
+
 
 	$GroupeOU = "Admin-"+$User.Name #Groupe incrémenté aussi comme le Name 
 
@@ -14,6 +16,8 @@ function AddOUforUserX($User)
 		{
 			Remove-ADOrganizationalUnit -Identity $User.Path -Confirm:$False
 			write-host	"ADOrganizationalUnit: $checkUserOU supprimé"
+			New-ADOrganizationalUnit -Name $GroupeOU -ProtectedFromAccidentalDeletion $False
+			write-host	"ADOrganizationalUnit: $checkUserOU Créé"
 		}
 	else
 		{
@@ -24,10 +28,16 @@ function AddOUforUserX($User)
 		{
 			Remove-ADUser -identity $User.SamAccountName 
 			write-host	"ADUser: $checkUser supprimé"
+			New-ADUser -Name $User.Name -GivenName $User.GivenName -Surname $User.Surname -SamAccountName $User.SamAccountName -UserPrincipalName $User.UserPrincipalName -Path $User.Path -AccountPassword $User.AccountPassword -Enabled $User.Enabled
+			write-host	"ADUser: $checkUser Créé"
+			$Check= "OK"
 		}
 	else
 		{
 			New-ADUser -Name $User.Name -GivenName $User.GivenName -Surname $User.Surname -SamAccountName $User.SamAccountName -UserPrincipalName $User.UserPrincipalName -Path $User.Path -AccountPassword $User.AccountPassword -Enabled $User.Enabled
 			write-host	"ADUser: $checkUser Créé"
+			$Check= "OK"
 		}
+	
+	Return $Check
 }

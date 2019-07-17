@@ -1,4 +1,4 @@
-#Fonctions
+#Fonctions password
 function random-password($Pass_Secure)
 {
     write-host "Fonction random-password lancée"
