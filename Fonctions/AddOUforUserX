@@ -6,11 +6,11 @@ For (i in $List)
 	$checkUserOU= Get-ADUser -identity $User | Select-Object DistinguishedName 
 	if($User -eq $checkUser)
 	{
-		Get ADUser -identity | Select-Object
+		Remove-ADUser -Name $User.Name
 	}
 	else
 		{
-			New-ADUser $User
+			New-ADUser -Name $User.Name -GivenName $User.GivenName -Surname $User.Surname -SamAccountName $User.SamAccountName -UserPrincipalName $User.UserPrincipalName -Path $User.Path -AccountPassword $User.AccountPassword -Enabled $User.Enabled
 		}
 	if()
 	{

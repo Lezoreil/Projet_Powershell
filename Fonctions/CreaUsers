@@ -17,16 +17,18 @@ function CreaUsers($User)
 		{
 			$CompteurID++
 			$CompteurID #Affichage de check
-
-			$Plettre = $User.Name.subString(0,1)
-			$GroupeOU = "Admin-$User.Name"
-			$Domain = "maquette.local"
+            #Remplissage de l'utilisateur
+			$Plettre = $User.Name.subString(0,1) #Recupère la première lettre du Prenom
+			$GroupeOU = "Admin-$User.Name" #Groupe incrémenté aussi comme le Name
+			$Domain = "maquette.local" 
             $User.SamAccountName = "$Plettre$User.Surname"
             $User.UserPrincipalName = "$User.SamAccountName@$Domain"
             $User.Path = "OU=$GroupeOU,DC=maquette,DC=local"
-            $User.AccountPassword = random-password
+            $User.AccountPassword = random-password 
+            #Check de l'utilisateur et et son groupe (Création/Suppression)
+            AddOUforUserX($User)
 		}
 
 	$CompteurID = 0
-    return $Etat
+    return $CompteurID
 }
