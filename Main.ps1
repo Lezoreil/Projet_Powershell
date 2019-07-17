@@ -6,3 +6,5 @@ Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\rand
 
 $DC1='power'
 $DC2='local'
+
+CreaUsers
