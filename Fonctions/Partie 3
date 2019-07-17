@@ -11,3 +11,11 @@ Write-Host -ForegroundColor GREEN "New Cluster deployed to vCenter"
 #Adding ESXI
 Add-VMHost -Server "192.168.95.154" -Name "192.168.95.139" -Location Cluster -Username root -Password Espoir15 -force
 Write-Host -ForegroundColor GREEN "New ESXI is deployed to Cluster"
+
+#PortGroup CSV
+Import-Csv -Delimiter ";" -Path "D:\MSI\Téléchargement\portgroup.csv" | ForEach-Object {
+    $Portgroups = $_.Portgroups
+    $ID = $_.ID
+
+    New-VirtualPortGroup -VirtualSwitch vSwitch0 -Name $Portgroups -VLanId $ID -Confirm $false
+}
