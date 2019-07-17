@@ -15,5 +15,5 @@ $Pass_Secure = ConvertTo-SecureString $Pass_Simple -AsPlainText -Force
 #Affichage
 #$Pass_Simple
 #$Pass_Secure
-return $Pass_Simple
+return $Pass_Secure
 }
