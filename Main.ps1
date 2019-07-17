@@ -4,5 +4,5 @@ Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\AddO
 Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\CreaUsers.ps1
 Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\random-password.ps1
 
-$DC1=
-$DC2=
+$DC1='power'
+$DC2='local'

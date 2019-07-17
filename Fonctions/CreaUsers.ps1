@@ -25,9 +25,9 @@ function CreaUsers($User)
 			$CompteurID #Affichage de check
             #Remplissage de l'utilisateur
 			$Plettre = $User.Name.subString(0,1) #Recupère la première lettre du Prenom
-			$GroupeOU = "Admin-$User.Name" #Groupe incrémenté aussi comme le Name 
-            $User.SamAccountName = "$Plettre$User.Surname"
-            $User.UserPrincipalName = "$User.SamAccountName@$DC1.DC2"
+			$GroupeOU = "Admin-"+$User.Name #Groupe incrémenté aussi comme le Name 
+            $User.SamAccountName = $Plettre+$User.Surname
+            $User.UserPrincipalName = $User.SamAccountName+"@"+$DC1+"."+$DC2
             $User.Path = "OU=$GroupeOU,DC=$DC1,DC=$DC2"
             $User.AccountPassword = random-password 
             #Check de l'utilisateur et et son groupe (Création/Suppression)
