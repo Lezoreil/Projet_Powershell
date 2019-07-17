@@ -1,7 +1,7 @@
 #Fonctions check
-Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
-Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\random-password.ps1
-Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\CreaUsers.ps1
+#Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
+#Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\random-password.ps1
+#Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\CreaUsers.ps1
 
 function Check($User)
 {

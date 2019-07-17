@@ -2,7 +2,7 @@
     Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
     Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\random-password.ps1
     Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\Check.ps1
-}
+
 function CreaUsers($User)
 {
     write-host "Fonction CreaUsers lancée"
@@ -20,7 +20,7 @@ function CreaUsers($User)
             AccountPassword = ""
             Enabled = $true}
     #Boucle de création
-	For ($CompteurID= 0, $CompteurID -le 9, $CompteurID++)
+	while ($CompteurID -le 9)
 		{
 			$CompteurID #Affichage du compteur
             #Remplissage de l'utilisateur
