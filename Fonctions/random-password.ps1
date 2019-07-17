@@ -1,4 +1,8 @@
 #Fonctions password
+Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
+Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\CreaUsers.ps1
+Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Fonctions\Check.ps1
+
 function random-password($Pass_Secure)
 {
     write-host "Fonction random-password lancée"
