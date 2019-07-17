@@ -5,10 +5,10 @@ function AddOUforUserX($User)
 
 	$GroupeOU = "Admin-"+$User.Name #Groupe incrémenté aussi comme le Name 
 
-	$checkUser= Get-ADUser -identity $User.UserPrincipalName  
-	$checkUserOU= Get-ADUser -identity $User.UserPrincipalName 
+	$checkUser= Get-ADUser -identity $User.SamAccountName 
+	$checkUserOU= Get-ADUser $GroupeOU 
 
-	if(($User.DistinguishedName -eq $checkUserOU)
+	if($GroupeOU -eq $checkUserOU)
 		{
 			Remove-ADOrganizationalUnit -Name $GroupeOU
 		}
@@ -18,7 +18,7 @@ function AddOUforUserX($User)
 		}
 	if($User.Name -eq $checkUser)
 		{
-			Remove-ADUser -identity $User.SamAccountName -force
+			Remove-ADUser -identity $User.SamAccountName
 		}
 	else
 		{
