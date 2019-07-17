@@ -1,5 +1,7 @@
 #Fonctions
-function random-password($Pass_Secure){
+function random-password($Pass_Secure)
+{
+    write-host "Fonction random-password lancée"
 	for ($i=0;$i -lt 3;$i++)
 	{
 		$min += Get-Random -InputObject a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z

@@ -1,7 +1,8 @@
 #Fonctions
 function AddOUforUserX($User)
 {
-	Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
+	write-host "Fonction AddOUforUserX lancée"
+	#Import-module $env:USERPROFILE\Documents\GitHub\Projet_Powershell\Main.ps1
 
 	$GroupeOU = "Admin-"+$User.Name #Groupe incrémenté aussi comme le Name 
 
@@ -11,7 +12,7 @@ function AddOUforUserX($User)
 
 	if($GroupeOU -eq $checkUserOU)
 		{
-			Remove-ADOrganizationalUnit -Identity $User.Path
+			Remove-ADOrganizationalUnit -Identity $User.Path -Confirm:$False
 			write-host	"ADOrganizationalUnit: $checkUserOU supprimé"
 		}
 	else
@@ -21,7 +22,7 @@ function AddOUforUserX($User)
 		}
 	if($User.Name -eq $checkUser.Name)
 		{
-			Remove-ADUser -identity $User.SamAccountName
+			Remove-ADUser -identity $User.SamAccountName 
 			write-host	"ADUser: $checkUser supprimé"
 		}
 	else
