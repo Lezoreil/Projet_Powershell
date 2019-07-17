@@ -1,0 +1,13 @@
+#Ignore error certifcate
+#Set-PowerCLIConfiguration -InvalidCertificateAction ignore
+
+#Connection to Vcenter
+Connect-VIServer "192.168.95.154" -Username root -Password vmware
+
+#Create Cluster / ADRS automatique
+New-Cluster -Location ESGI -Name Cluster -DrsAutomationLevel FullyAutomated
+Write-Host -ForegroundColor GREEN "New Cluster deployed to vCenter"
+
+#Adding ESXI
+Add-VMHost -Server "192.168.95.154" -Name "192.168.95.139" -Location Cluster -Username root -Password Espoir15 -force
+Write-Host -ForegroundColor GREEN "New ESXI is deployed to Cluster"
