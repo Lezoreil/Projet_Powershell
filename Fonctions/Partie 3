@@ -17,5 +17,5 @@ Import-Csv -Delimiter ";" -Path "D:\MSI\Téléchargement\portgroup.csv" | ForEac
     $Portgroups = $_.Portgroups
     $ID = $_.ID
 
-    New-VirtualPortGroup -VirtualSwitch vSwitch0 -Name $Portgroups -VLanId $ID -Confirm $false
+    New-VirtualPortGroup -VirtualSwitch vSwitch0 -Name $Portgroups -VLanId $ID
 }
