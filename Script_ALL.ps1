@@ -5,7 +5,9 @@
 #	Autor 	: 	Vincent GRATEAU				#
 #############################################
 
-
+#Import-Module -Name DnsServer
+#Import-Module -Name ActiveDirectory
+Import-Module VMware.VimAutomation.Core
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 #								  		PATH FILES							  		   #
 $path_log = "C:\Users\Administrator\Desktop\projet_powershell\result.log"
@@ -19,9 +21,9 @@ $mail_target = "vgrateau@myges.fr"
 $mail_serv = "vgrateau@outlook.com"
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-Import-Module VMware.VimAutomation.Core
+
 $address_serveur = "10.1.1.10"
-$address_esxi1 = "10.1.1.10"
+$address_esxi1 = "10.1.1.11"
 
 $login = "root"
 $password = "Root1!Root1!"
@@ -77,11 +79,119 @@ function White_to_Log_Complet_fct($VM_State, $path_log,$info_VM)
     Add-Content $path_log -Value " "
 }
 
-
 function progression_print_fct($Delta_VM_done)
 {
 	$progression = $([math]::Round($(($Delta_VM_done * 100)/$Num_total_VM_CSV)))
 	Write-Host " PROGRESSION [$progression %] ---> $Delta_VM_done VM / $Num_total_VM_CSV VM " -ForegroundColor Yellow
+}
+
+function Check($User)
+{
+    write-host "Fonction Check lancée"
+
+
+    $GroupeOU = "Admin-"+$User.Name #Groupe incrémenté aussi comme le Name 
+    $checkUser= Get-ADUser -identity $User.SamAccountName 
+    $checkUserOU= Get-ADOrganizationalUnit $GroupeOU 
+
+    if($GroupeOU -eq $checkUserOU)
+    {
+            ################################################################################
+            try 
+	        { 
+                Remove-ADOrganizationalUnit -Identity $User.Path -Confirm:$False -ErrorAction Stop 
+                write-host  "ADOrganizationalUnit: $checkUserOU deleted"  -ForegroundColor green
+            }
+            catch [Exception]
+	        {  
+                Write-Host "`n An error occured during the removal of user process : `n  $_.Exception" -ForegroundColor Red
+            }
+            ################################################################################
+            try
+            {
+                New-ADOrganizationalUnit -Name $GroupeOU -ProtectedFromAccidentalDeletion $False -ErrorAction Stop 
+                write-host  "ADOrganizationalUnit: $checkUserOU Created"   -ForegroundColor green
+            }
+            catch [Exception]
+	        {  
+                Write-Host "`n An error occured during the creation of user process : `n  $_.Exception" -ForegroundColor Red
+            }
+    }
+
+    else
+    {
+            ################################################################################
+            try
+            {
+                New-ADOrganizationalUnit -Name $GroupeOU -ProtectedFromAccidentalDeletion $False -ErrorAction Stop 
+                write-host  "ADOrganizationalUnit: $checkUserOU Created"
+            }
+            catch [Exception]
+	        {  
+                Write-Host "`n An error occured during the creation of user process : `n  $_.Exception" -ForegroundColor Red
+            }
+    }
+
+    if($User.Name -eq $checkUser.Name)
+    {
+            try 
+	        { 
+                Remove-ADUser -identity $User.SamAccountName 
+                write-host  "ADUser: $checkUser deleted" -ForegroundColor green
+            }
+            catch [Exception]
+	        {  
+                Write-Host "`n An error occured during the removal of user process : `n  $_.Exception" -ForegroundColor Red
+            }
+            ################################################################################
+            try
+            {
+                New-ADUser -Name $User.Name -GivenName $User.GivenName -Surname $User.Surname -SamAccountName $User.SamAccountName -UserPrincipalName $User.UserPrincipalName -Path $User.Path -AccountPassword $User.AccountPassword -Enabled $User.Enabled -ErrorAction Stop 
+                write-host  "ADUser: $checkUser Created" -ForegroundColor green
+            }
+            catch [Exception]
+	        {  
+                Write-Host "`n An error occured during the creation of new user provisionning process : `n  $_.Exception" -ForegroundColor Red
+            }
+            Write-host "Check OK"
+    }
+
+    else
+    {
+            try 
+	        { 
+                New-ADUser -Name $User.Name -GivenName $User.GivenName -Surname $User.Surname -SamAccountName $User.SamAccountName -UserPrincipalName $User.UserPrincipalName -Path $User.Path -AccountPassword $User.AccountPassword -Enabled $User.Enabled -ErrorAction Stop 
+                write-host  "ADUser: $checkUser Create"
+                $Check= "OK"
+            }
+            catch [Exception]
+	        {   
+                Write-Host "`n An error occured during the creation of new user provisionning process : `n  $_.Exception" -ForegroundColor Red
+            }
+    }
+    
+    Return $Check
+}
+
+function random-password($Pass_Secure)
+{
+    write-host "Fonction random-password lancée"
+    for ($i=0;$i -lt 3;$i++)
+    {
+        $min += Get-Random -InputObject a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z
+    }
+    for ($i=0;$i -lt 3;$i++)
+    {
+        $maj += Get-Random -InputObject A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+    }
+    $nombre = Get-Random -Minimum 10 -Maximum 99
+    $caracspec = Get-Random -InputObject $,!,%,*,_,-,+,=,?,[,],:,"@","&","#","|","(",")","{","}",";",",","."
+    $Pass_Simple = $maj+$min+$caracspec+$nombre
+    $Pass_Secure = ConvertTo-SecureString $Pass_Simple -AsPlainText -Force
+    #Affichage
+    #$Pass_Simple
+    #$Pass_Secure
+    return $Pass_Secure
 }
 
 function add_1_vm_fct($line_csv,$path_log_complet, $result_creation, $mail_target, $NameCluster, $Dalta_VM_done)
@@ -89,7 +199,6 @@ function add_1_vm_fct($line_csv,$path_log_complet, $result_creation, $mail_targe
     $Total_VM_creat_sucess+= 1
 	try 
 	{
-       
 		$NameCluster = $line_csv.NameCluster
         
 		#$Datastore = $line_csv.Datastore
@@ -304,8 +413,119 @@ function change_csv_path_fct($path_csv)
     }
 }
 
+function fct_AD()
+{
+    clear
+    Write-Host "#######################################	"
+	Write-Host "#                               	  # "
+	Write-Host "#       Function Create User          # "
+	Write-Host "#                                     # "
+	Write-Host "#######################################	"
+    Write-Host "`n "
 
-function fct_vCenter ($NewUser)
+    #Imports
+    $CompteurID = 0
+    #Objet User
+    $User= New-Object psobject -Property @{
+            Id = $CompteurID
+            Name = "toto-0"+$CompteurID
+            GivenName = "0"
+            Surname = "toto"
+            SamAccountName = ""
+            UserPrincipalName = ""
+            Path = ""
+            AccountPassword = ""
+            Enabled = $true}
+    #Boucle de création
+    while ($CompteurID -le 9)
+        {
+            $CompteurID++
+            $CompteurID #Affichage du compteur
+            #Remplissage de l'utilisateur
+            $User.Name = "toto-0"+$CompteurID
+            $Plettre = $User.Name.subString(0,1) #Recupère la première lettre du Prenom
+            $GroupeOU = "Admin-"+$User.Name #Groupe incrémenté aussi comme le Name
+            $User.SamAccountName = $Plettre+$User.Surname+$CompteurID
+            $User.UserPrincipalName = $User.SamAccountName+"@"+$DC1+"."+$DC2
+            $User.Path = "OU=$GroupeOU,DC=$DC1,DC=$DC2"
+            $User.AccountPassword = random-password 
+            $User
+            #Check de l'utilisateur et et son groupe (Création/Suppression)
+            $Check = Check($User)
+            write-host "Resultat: $Check"
+        }
+   #return $User
+}
+
+function fct_DNS()
+{
+	Write-Host "#######################################	"
+	Write-Host "#                                     # "
+	Write-Host "#           Program DNS               # "
+	Write-Host "#                                     # "
+	Write-Host "#######################################	"
+    Write-Host "   	"
+
+    $ipAddress = Read-Host -Prompt "Please enter the IP address of the Esxi"
+    if( -not ($ipAddress -match "^(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)$"))
+     {
+        do
+        {
+        $ipAddress = Read-Host -Prompt "Please enter a correct IPv4 address xxx.xxx.xxx.xxx"
+        }until( $ipAddress -match "^(?:(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)\.){3}(?:1\d\d|2[0-5][0-5]|2[0-4]\d|0?[1-9]\d|0?0?\d)$")
+    }
+    #Permet de lister les records DNS de power.local correspondant à l'addresse saisie
+    $checkRecord = Get-DnsServerResourceRecord -ZoneName power.local | Where-Object {$_.RecordData.IPv4Address -match $ipAddress}
+
+    if( $checkRecord )
+    {
+            $recordHostname = $checkRecord.Hostname
+            $recordType = $checkRecord.RecordType
+            
+            #Retire l'enregistrement DNS correspondant a l'adresse IP saisie
+            write-host "DNS precious record removal"
+            Remove-DnsServerResourceRecord -ZoneName power.local -Name $recordHostname -RRType $recordType -Force
+
+            #Permet de recreer l'enregistrement DNS sur l'ip saisie
+            write-host "DNS new record creation"
+            Add-DnsServerResourceRecordA -Name $recordHostname -ZoneName power.local -IPv4Address $ipAddress
+
+            $isComputer = Get-ADComputer -Filter 'Name -like "ESXI"'
+            if( -Not $isComputer )
+            {
+                Write-Host "A new computer has been added to the Active Directory"
+                #Creation d'un ordinateur (par defaut dans OU computers)
+                New-ADComputer -Name $recordHostname -SAMAccountName $recordHostname 
+            }
+            else
+            {
+                Write-Host "Deletion of the previous computer"
+                #Si le computer existe deja il est supprime puis recreer
+                Remove-ADComputer -Identity $recordHostname -Confirm:$false
+                Write-Host "Creation of a new computer"
+                New-ADComputer -Name $recordHostname -SAMAccountName "ESXI" 
+            }
+    }
+    else
+    {
+            Write-Host "This record doesnt exist ..."
+            $nameNewRecord = Read-Host -Prompt "Please enter the hostname of the Esxi"
+
+            #Si le record n'existe pas, il est cree
+            Add-DnsServerResourceRecordA -Name $nameNewRecord -ZoneName power.local -IPv4Address $ipAddress
+            
+            Write-Host "The new record has been created."
+
+            #Creation d'un ordinateur (par defaut dans OU computers)
+            New-ADComputer -Name $nameNewRecord -SAMAccountName $nameNewRecord 
+
+            Write-Host "A new computer named $nameNewRecord has been created !"
+
+            break
+    }
+}
+
+function fct_vCenter()
 {
     clear
     Write-Host "#######################################	"
@@ -316,6 +536,7 @@ function fct_vCenter ($NewUser)
     Write-Host "`n "
     $New_Cluster_name = "Cluster2"
     $Datacenter_name = "DC"
+    $Esxi_Ip_add = "10.1.1.12"
     try 
 	{
         #New-VIPermission -Role "Admin" -Principal $NewUser -Entity (Get-Datacenter)
@@ -333,7 +554,7 @@ function fct_vCenter ($NewUser)
     try 
 	{
         #Adding ESXI
-        Add-VMHost -Server $address_serveur -Name "10.1.1.13" -Location $New_Cluster_name -Username $login -Password $password -force -ErrorAction Stop 
+        Add-VMHost -Server $address_serveur -Name $Esxi_Ip_add -Location $New_Cluster_name -Username $login -Password $password -force -ErrorAction Stop 
         Write-Host -ForegroundColor GREEN "New ESXI is deployed to Cluster"
     }
     catch [Exception]
@@ -344,83 +565,102 @@ function fct_vCenter ($NewUser)
     try 
 	{
         #PortGroup CSV
-        Import-Csv -Delimiter ";" -Path $path_portgroup_csv | ForEach-Object 
-        {
+        Import-Csv -Delimiter ";" -Path $path_portgroup_csv | ForEach-Object {
             $Portgroups = $_.Portgroups
             $ID = $_.ID
-
-            New-VirtualPortGroup -VirtualSwitch vSwitch0 -Name $Portgroups -VLanId $ID -Confirm $false -ErrorAction Stop 
+            New-VirtualPortGroup -VirtualSwitch vSwitch0 -Name $Portgroups -VLanId $ID  -ErrorAction Stop 
+            Write-Host -ForegroundColor GREEN "New ESXI is deployed to Cluster"
         }
     }
     catch [Exception]
 	{   
-        Write-Host "An error occured during the vCenter provisionning process : `n  $_.Exception" -ForegroundColor Red
+        Write-Host "`n An error occured during the vCenter provisionning process : `n  $_.Exception" -ForegroundColor Red
     }
-
+    pause
 }
 
-function fct_create_vm
+ 
+function fct_create_vm($path_csv)
 {
-     clear
+    $csv_file = import-csv $path_csv -delimiter ","
+    clear
     Write-Host "#######################################	"
 	Write-Host "#                               	  # "
 	Write-Host "#            Function Create VM       # "
 	Write-Host "#                                     # "
 	Write-Host "#######################################	"
     Write-Host "`n "
-           $Delta_VM_done = 0 
-	       $progression = 0
-	       $Result_Statement_VM =""
-	       #$result_creation=0,0
-           $csv_file
-		   Write-Host "Do you want import all VM WITHOUT verification ? "
-           $verif_vm = Read-Host " Verif[Y] or noVerif[N]  >> " # if verif=y --> verif OK / verif=N --> NO verif 
-           foreach ($line_csv in $csv_file)
-		   {
-			    $line_csv
-	    		if($verif_vm -ne "N") # verif auto
-                {
-                    Write-Host " "	
-		    	    Write-Host " Do you want import this VM ? " -ForegroundColor Yellow -NoNewline
-                    $finalChoose = Read-Host " [Y] or [N] " 
-                    if ($finalChoose -eq "Y")
-			        {	
-				        #$line_csv
-                        
-                        $result_creation = add_1_vm_fct $line_csv $path_log $result_creation $mail_target $Dalta_VM_done 
-	                }
-                }
-                else #no verif
-                { 
-                   $result_creation = add_1_vm_fct $line_csv $path_log $result_creation $mail_target $Dalta_VM_done
-                }
-
-                $Delta_VM_done = $Delta_VM_done + 1	 # Fct progression programme 
-		        progression_print_fct $Delta_VM_done
-           } 
+  
+    $Delta_VM_done = 0 
+	$progression = 0
+	$Result_Statement_VM =""
+	#$result_creation=0,0
+    $csv_file
+	write-Host "Do you want import all VM WITHOUT verification ? " -ForegroundColor Yellow 
+    $verif_vm = Read-Host " Verif[Y] or noVerif[N]  >> " # if verif=y --> verif OK / verif=N --> NO verif
+    foreach ($line_csv in $csv_file)
+	{
+	    $line_csv
+		if($verif_vm -ne "N") # verif auto
+        {
+            Write-Host " "	
+	   	    Write-Host " Do you want import this VM ? " -ForegroundColor Yellow -NoNewline
+            $finalChoose = Read-Host " [Y] or [N] " 
+            if ($finalChoose -eq "Y")
+	        {	
+		        #$line_csv                
+                $result_creation = add_1_vm_fct $line_csv $path_log $result_creation $mail_target $Dalta_VM_done 
+	        }
+        }
+        else #no verif
+        { 
+           $result_creation = add_1_vm_fct $line_csv $path_log $result_creation $mail_target $Dalta_VM_done
+        }
+        $Delta_VM_done = $Delta_VM_done + 1	 # Fct progression programme 
+		progression_print_fct $Delta_VM_done
+    } 
 }
+
+function Print_IHM_fct ()
+{
+	clear
+	Write-Host "#######################################	"
+	Write-Host "#                                     # "
+	Write-Host "#           Program Powershell        # "
+	Write-Host "#                                     # "
+	Write-Host "#######################################	"
+    Write-Host "   	"
+	Write-Host "  What do you want to do ? "
+    Write-Host "  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~"
+	Write-Host "  1) AD "
+	Write-Host "  2) DNS"
+	Write-Host "  3) vCenter"	
+	Write-Host "  4) Create VM" 
+    Write-Host "  5) Export" 
+    Write-Host "  6) Exit" 
+	
+} 
 
 function main_fct($path_csv, $path_log, $address_serveur, $login, $mail_target)
 {
-
     $Delta_VM_done = 0 
 	$progression = 0
 	$Result_Statement_VM =""
 	$result_creation=0,0
-    $path_log_basic
     
-    $UserChoose = Print_IHM_fct $path_csv
-
-    while ($UserChoose -eq "1" -or $UserChoose -eq "2" -or $UserChoose -eq "3" -or $UserChoose -eq "4" -or $UserChoose -eq "5") 
-    {     
-	    $csv_file = import-csv $path_csv -delimiter ","
-	
-	    $measure =  Get-Content $path_csv
-	    $Num_total_VM_CSV = $((($measure | Select-String .).Count))-1
-	    
+    
+    $UserChoose = "0"
+    
+    #while ($UserChoose -eq "1" -or $UserChoose -eq "2" -or $UserChoose -eq "3" -or $UserChoose -eq "4" -or $UserChoose -eq "5") 
+    
+    while($UserChoose -ne "6")    
+	{    
+        Print_IHM_fct $path_csv
+        Write-Host "  >>> Choose Action" -NoNewline -ForegroundColor Yellow
+	    $UserChoose = Read-Host " " 
 	    if($UserChoose -eq "1") # AD
 	    {
-             $NewUser= fct_AD
+             fct_AD
 	    }
     
    	    if($UserChoose -eq "2") # DNS
@@ -435,49 +675,19 @@ function main_fct($path_csv, $path_log, $address_serveur, $login, $mail_target)
 
         if($UserChoose -eq "4") # Create VM
         {
-           fct_create_vm
+           fct_create_vm($path_csv)
         }
         
         if($UserChoose -eq "5") # Export
         {
             fct_export
         }
-        
-        pause
-	    clear
-       
-
-        
-      
-        pause
-         $UserChoose = Print_IHM_fct $path_csv
-    }
-    return
-    
-}
+    } 
+}   
 
 
-function Print_IHM_fct ($path_csv)
-{
-	clear
-	Write-Host "#######################################	"
-	Write-Host "#                               	  # "
-	Write-Host "#           Program Powershell        # "
-	Write-Host "#                                     # "
-	Write-Host "#######################################	"
-    Write-Host "   	"
-	Write-Host "  What do you want to do ? "
-    Write-Host "  ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~"
-	Write-Host "  1) AD "
-	Write-Host "  2) DNS"
-	Write-Host "  3) vCenter"	
-	Write-Host "  4) Create VM" 
-    Write-Host "  5) Export" 
-    Write-Host "  6) Exit" 
-	Write-Host "  >>> Choose Action" -NoNewline -ForegroundColor Yellow
-	$UserChoose_IHM = Read-Host " " 
-	return $UserChoose_IHM
-} 
+
+
 
 Write-Host "Loading ..."
 main_fct $path_csv $path_log $address_serveur $login $mail_target
