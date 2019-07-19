@@ -1,0 +1,4 @@
+NameCluster,Name,Datastore,GuestID,NumCPU,CoresPerSocket,MemoryMB,DiskMB,DiskStorageFormat,NetworkName,Notes
+"Cluster1","VM_1","datastore1","otherLinux64Guest",1,1,1572,1024,Thin,"PG1","This is Linux VM for testing VMware PowerCLI"
+"Cluster1","VM_2","datastore1","otherLinux64Guest",1,1,1572,1024,Thin,"PG1","This is Linux VM for testing VMware PowerCLI"
+"Cluster1","VM_3","datastore1","otherLinux64Guest",1,1,1572,1024,Thin,"PG1","This is Linux VM for testing VMware PowerCLI"
